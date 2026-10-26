@@ -1,0 +1,313 @@
+﻿{% extends "base.html" %}
+{% block title %}My Dashboard — CervixGuard AI{% endblock %}
+
+{% block head %}
+<style>
+.page{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:2rem 1rem 4rem}
+
+/* Header */
+.page-header{margin-bottom:2rem}
+.page-header h2{font-size:1.5rem;font-weight:800;color:#fff;letter-spacing:-.03em}
+.page-header p{font-size:.82rem;color:rgba(255,255,255,.35);margin-top:.3rem}
+
+/* ── Vaccine Reminder Banners ─────────────────────────────────────────────── */
+.reminders-stack{display:flex;flex-direction:column;gap:.75rem;margin-bottom:2rem}
+
+.reminder-banner{
+  display:flex;align-items:center;gap:1rem;
+  padding:1rem 1.25rem;
+  border-radius:14px;
+  border:1px solid;
+  animation: slideDown .35s ease both;
+  position:relative;
+}
+
+@keyframes slideDown{
+  from{opacity:0;transform:translateY(-8px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+
+/* overdue = red */
+.reminder-banner.overdue{
+  background:rgba(239,68,68,.08);
+  border-color:rgba(239,68,68,.28);
+}
+/* upcoming = amber */
+.reminder-banner.upcoming{
+  background:rgba(251,191,36,.07);
+  border-color:rgba(251,191,36,.28);
+}
+/* due soon (≤7 days) = orange */
+.reminder-banner.soon{
+  background:rgba(249,115,22,.08);
+  border-color:rgba(249,115,22,.28);
+}
+
+.reminder-icon{
+  font-size:1.6rem;
+  flex-shrink:0;
+  line-height:1;
+}
+
+.reminder-body{flex:1;min-width:0}
+.reminder-title{
+  font-size:.88rem;font-weight:700;
+  margin-bottom:.2rem;
+}
+.overdue  .reminder-title{color:#f87171}
+.upcoming .reminder-title{color:#fcd34d}
+.soon     .reminder-title{color:#fb923c}
+
+.reminder-sub{font-size:.76rem;color:rgba(255,255,255,.4)}
+
+.reminder-badge{
+  flex-shrink:0;
+  font-size:.7rem;font-weight:700;
+  padding:.22rem .75rem;border-radius:999px;
+  white-space:nowrap;
+}
+.overdue  .reminder-badge{background:rgba(239,68,68,.2); color:#f87171;border:1px solid rgba(239,68,68,.4)}
+.upcoming .reminder-badge{background:rgba(251,191,36,.15);color:#fcd34d;border:1px solid rgba(251,191,36,.35)}
+.soon     .reminder-badge{background:rgba(249,115,22,.15);color:#fb923c;border:1px solid rgba(249,115,22,.35)}
+
+.reminder-action{
+  flex-shrink:0;
+  font-size:.75rem;font-weight:600;
+  padding:.3rem .9rem;border-radius:8px;
+  text-decoration:none;
+  background:rgba(255,255,255,.07);
+  color:rgba(255,255,255,.7);
+  border:1px solid rgba(255,255,255,.1);
+  transition:all .2s;
+  white-space:nowrap;
+}
+.reminder-action:hover{background:rgba(255,255,255,.13);color:#fff}
+
+/* dismiss × */
+.reminder-dismiss{
+  position:absolute;top:.6rem;right:.75rem;
+  background:none;border:none;
+  color:rgba(255,255,255,.2);
+  font-size:.8rem;cursor:pointer;
+  line-height:1;padding:.2rem;
+  border-radius:4px;
+  transition:color .15s;
+}
+.reminder-dismiss:hover{color:rgba(255,255,255,.55)}
+
+/* Summary cards */
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem}
+.sum-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:1.3rem;text-align:center}
+.sum-card .num{font-size:2rem;font-weight:800;letter-spacing:-.04em}
+.sum-card .lbl{font-size:.7rem;color:rgba(255,255,255,.35);margin-top:.3rem;text-transform:uppercase;letter-spacing:.06em}
+.sv-total{color:#fff}.sv-low{color:#34d399}.sv-medium{color:#fb923c}.sv-high{color:#f87171}
+
+/* Section title */
+.section-title{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin:2rem 0 1rem;display:flex;align-items:center;gap:.6rem}
+.section-title::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.06)}
+
+/* Assessment cards */
+.assessment-list{display:flex;flex-direction:column;gap:.85rem}
+.assessment-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:1.3rem 1.5rem;display:flex;align-items:center;gap:1.2rem;transition:all .2s}
+.assessment-card:hover{border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+.risk-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.icon-low   {background:rgba(16,185,129,.12);border:1.5px solid rgba(16,185,129,.25)}
+.icon-medium{background:rgba(249,115,22,.12);border:1.5px solid rgba(249,115,22,.25)}
+.icon-high  {background:rgba(239,68,68,.12); border:1.5px solid rgba(239,68,68,.25)}
+.card-main{flex:1;min-width:0}
+.card-patient{font-size:.95rem;font-weight:700;color:#fff;margin-bottom:.25rem}
+.card-meta{font-size:.75rem;color:rgba(255,255,255,.35);display:flex;gap:1rem;flex-wrap:wrap}
+.card-meta span{display:flex;align-items:center;gap:.3rem}
+.card-right{text-align:right;flex-shrink:0}
+.pill{display:inline-block;padding:.25rem .85rem;border-radius:999px;font-size:.72rem;font-weight:700}
+.pill-low   {background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+.pill-medium{background:rgba(249,115,22,.15);color:#fb923c;border:1px solid rgba(249,115,22,.3)}
+.pill-high  {background:rgba(239,68,68,.15); color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.card-confidence{font-size:.72rem;color:rgba(255,255,255,.3);margin-top:.3rem}
+.del-btn{background:none;border:none;color:rgba(255,255,255,.2);font-size:.85rem;cursor:pointer;padding:.3rem .5rem;border-radius:7px;transition:all .2s;margin-top:.3rem}
+.del-btn:hover{color:#f87171;background:rgba(239,68,68,.1)}
+
+/* Empty state */
+.empty-state{text-align:center;padding:3.5rem 1rem;color:rgba(255,255,255,.25)}
+.empty-state .empty-icon{font-size:2.5rem;margin-bottom:1rem;opacity:.4}
+.empty-state p{font-size:.85rem;margin-bottom:1.2rem}
+.btn-purple{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;padding:.6rem 1.4rem;border-radius:10px;text-decoration:none;font-size:.82rem;font-weight:600;display:inline-block}
+
+/* New assessment btn */
+.new-btn{background:linear-gradient(135deg,#7c3aed,#db2777);color:#fff;padding:.5rem 1.2rem;border-radius:10px;text-decoration:none;font-size:.8rem;font-weight:600;float:right}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+
+  <div class="page-header">
+    <a href="/" class="new-btn">+ New Assessment</a>
+    <h2>My Health Dashboard</h2>
+    <p>Your personal cervical cancer risk assessment history</p>
+  </div>
+
+  <!-- ── Vaccine Reminders ──────────────────────────────────────────────── -->
+  {% if vaccine_reminders %}
+  <div class="reminders-stack" id="reminders-stack">
+    {% for r in vaccine_reminders %}
+
+      {# Determine urgency class #}
+      {% if r.overdue %}
+        {% set urgency = "overdue" %}
+        {% set icon    = "💉" %}
+        {% set badge   = "Overdue" %}
+        {% set title   = "Dose " ~ r.dose ~ " is overdue!" %}
+        {% set sub     = "Was due on " ~ r.due_date ~ ". Please book your appointment." %}
+      {% elif r.days_left <= 7 %}
+        {% set urgency = "soon" %}
+        {% set icon    = "⏰" %}
+        {% set badge   = "Due in " ~ r.days_left ~ " day" ~ ("s" if r.days_left != 1 else "") %}
+        {% set title   = "Dose " ~ r.dose ~ " coming up soon" %}
+        {% set sub     = "Scheduled for " ~ r.due_date ~ ". Time to book!" %}
+      {% else %}
+        {% set urgency = "upcoming" %}
+        {% set icon    = "🗓️" %}
+        {% set badge   = r.days_left ~ " days away" %}
+        {% set title   = "Dose " ~ r.dose ~ " reminder" %}
+        {% set sub     = r.message ~ " Due: " ~ r.due_date %}
+      {% endif %}
+
+      <div class="reminder-banner {{ urgency }}" id="reminder-dose-{{ r.dose }}">
+        <button class="reminder-dismiss" onclick="dismissReminder({{ r.dose }})" title="Dismiss">✕</button>
+        <div class="reminder-icon">{{ icon }}</div>
+        <div class="reminder-body">
+          <div class="reminder-title">{{ title }}</div>
+          <div class="reminder-sub">{{ sub }}</div>
+        </div>
+        <span class="reminder-badge">{{ badge }}</span>
+        <a href="{{ url_for('vaccine.vaccine') }}" class="reminder-action">Log Dose →</a>
+      </div>
+
+    {% endfor %}
+  </div>
+  {% endif %}
+  <!-- ───────────────────────────────────────────────────────────────────── -->
+
+  <!-- Summary -->
+  <div class="summary-grid">
+    <div class="sum-card">
+      <div class="num sv-total">{{ total }}</div>
+      <div class="lbl">Total Assessments</div>
+    </div>
+    <div class="sum-card">
+      <div class="num" style="color:
+        {% if total > 0 %}
+          {% if risk_counts['High Risk'] > 0 %}#f87171
+          {% elif risk_counts['Medium Risk'] > 0 %}#fb923c
+          {% else %}#34d399{% endif %}
+        {% else %}#fff{% endif %}
+      ">
+        {% if total > 0 %}
+          {% if risk_counts['High Risk'] > 0 %}High
+          {% elif risk_counts['Medium Risk'] > 0 %}Medium
+          {% else %}Low{% endif %}
+        {% else %}—{% endif %}
+      </div>
+      <div class="lbl">Overall Risk Level</div>
+    </div>
+    <div class="sum-card">
+      <div class="num sv-total">
+        {% if history %}{{ history[0].timestamp.split(' ')[0] }}{% else %}—{% endif %}
+      </div>
+      <div class="lbl">Last Assessment</div>
+    </div>
+  </div>
+
+  <!-- Assessment history -->
+  <div class="section-title">Assessment History</div>
+
+  {% if history %}
+  <div class="assessment-list">
+    {% for rec in history %}
+    <div class="assessment-card" id="rec-{{ rec.id }}">
+
+      <div class="risk-icon
+        {% if rec.prediction == 'High Risk' %}icon-high
+        {% elif rec.prediction == 'Medium Risk' %}icon-medium
+        {% else %}icon-low{% endif %}">
+        {% if rec.prediction == 'High Risk' %}🔴
+        {% elif rec.prediction == 'Medium Risk' %}🟠
+        {% else %}🟢{% endif %}
+      </div>
+
+      <div class="card-main">
+        <div class="card-patient">{{ rec.patient_name }}</div>
+        <div class="card-meta">
+          <span>🎂 Age {{ rec.age | int }}</span>
+          <span>🚬 {{ "Smoker" if rec.smokes == 1 else "Non-smoker" }}</span>
+          <span>🧬 HPV {{ "Positive" if rec.stds_hpv == 1 else "Negative" }}</span>
+          <span>📅 {{ rec.timestamp }}</span>
+        </div>
+      </div>
+
+      <div class="card-right">
+        <div>
+          <span class="pill
+            {% if rec.prediction == 'High Risk' %}pill-high
+            {% elif rec.prediction == 'Medium Risk' %}pill-medium
+            {% else %}pill-low{% endif %}">
+            {{ rec.prediction }}
+          </span>
+        </div>
+        <div class="card-confidence">Confidence: {{ rec.confidence }}</div>
+        <button class="del-btn" onclick="deleteRecord({{ rec.id }})" title="Delete">🗑</button>
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">📋</div>
+    <p>No assessments yet. Submit your first risk assessment to see your health history here.</p>
+    <a href="/" class="btn-purple">Start Assessment</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function deleteRecord(id) {
+  if (!confirm('Delete this record? This cannot be undone.')) return;
+  fetch('/api/delete/' + id, { method: 'DELETE' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        const el = document.getElementById('rec-' + id);
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(20px)';
+        el.style.transition = 'all .3s';
+        setTimeout(() => el.remove(), 300);
+      } else {
+        alert('Delete failed: ' + data.error);
+      }
+    })
+    .catch(() => alert('Network error.'));
+}
+
+// Dismiss a reminder for the current session only
+// (no DB change — reappears on next login; extend with localStorage if wanted)
+function dismissReminder(dose) {
+  const el = document.getElementById('reminder-dose-' + dose);
+  if (!el) return;
+  el.style.transition = 'opacity .25s, transform .25s';
+  el.style.opacity    = '0';
+  el.style.transform  = 'translateY(-6px)';
+  setTimeout(() => {
+    el.remove();
+    // hide the whole stack if empty
+    const stack = document.getElementById('reminders-stack');
+    if (stack && !stack.querySelector('.reminder-banner')) stack.remove();
+  }, 260);
+}
+</script>
+{% endblock %}
