@@ -1,0 +1,14 @@
+# Secrets - never commit these
+.env
+
+# Local data (contains user accounts and patient assessments)
+*.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Generated
+evaluation_report.png

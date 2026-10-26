@@ -1,0 +1,8 @@
+flask
+pandas
+numpy
+scikit-learn
+imbalanced-learn
+matplotlib
+python-dotenv
+reportlab
