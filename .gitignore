@@ -22,3 +22,4 @@ instance/
 *.pkl
 cervical_cancer_app/.env
 >>>>>>> b6fa5cae904bf5e2106c33004b423b06513e90e1
+*.db
