@@ -1,0 +1,134 @@
+
+
+{% extends "base.html" %}
+{% block title %}{{ t('nav_assess') }} — CervixGuard AI{% endblock %}
+{% block content %}
+ 
+<section class="hero">
+  <span class="ribbon"></span>
+  <h1>{{ t('hero_title') }}</h1>
+  <p>{{ t('hero_lead') }}</p>
+</section>
+ 
+<div class="form-shell">
+  <div class="card">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+ 
+    <form id="assess-form" method="post" action="{{ url_for('assess.predict') }}">
+ 
+      <div class="form-section-label">{{ t('section_about') }}</div>
+ 
+      <div class="field">
+        <label for="patient_name">{{ t('input_patient_name') }}</label>
+        {% if profile and profile.full_name %}
+        <input type="text" id="patient_name" name="patient_name" value="{{ profile.full_name }}" readonly>
+        <p class="field-help">{{ t('name_from_account') }}</p>
+        {% else %}
+        <input type="text" id="patient_name" name="patient_name" placeholder="{{ t('input_patient_name_ph') }}" required>
+        {% endif %}
+      </div>
+ 
+      {% if profile and profile.birth_year %}
+      <div class="field">
+        <label for="Age">{{ t('input_age') }}</label>
+        <input type="number" id="Age" value="{{ profile.age }}" readonly>
+        <p class="field-help">{{ t('age_auto_note') }}</p>
+      </div>
+      {% else %}
+      <div class="field">
+        <label for="birth_year">{{ t('birth_year_label') }}</label>
+        <input type="number" id="birth_year" name="birth_year" min="{{ current_year - 100 }}" max="{{ current_year - 10 }}" step="1" placeholder="{{ t('birth_year_ph') }}" required>
+      </div>
+      {% endif %}
+ 
+      <div class="form-section-label">{{ t('section_lifestyle') }}</div>
+ 
+      <div class="row-2">
+        <div class="field">
+          <label for="partners">{{ t('input_sexual_partners') }}</label>
+          <input type="number" id="partners" name="Number of sexual partners" min="0" step="1" required>
+        </div>
+        <div class="field">
+          <label for="first_int">{{ t('input_first_intercourse') }}</label>
+          <input type="number" id="first_int" name="First sexual intercourse" min="8" max="60" step="1" required>
+        </div>
+      </div>
+ 
+      <div class="field">
+        <label for="pregnancies">{{ t('input_pregnancies') }}</label>
+        <input type="number" id="pregnancies" name="Num of pregnancies" min="0" step="1" required>
+      </div>
+ 
+      <div class="row-2">
+        <div class="field">
+          <label for="smokes">{{ t('input_smokes') }}</label>
+          <select id="smokes" name="Smokes" required>
+            <option value="0">{{ t('common_no') }}</option>
+            <option value="1">{{ t('common_yes') }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="smokes_years">{{ t('input_smokes_years') }}</label>
+          <input type="number" id="smokes_years" name="Smokes (years)" min="0" step="1" value="0">
+        </div>
+      </div>
+ 
+      <div class="row-2">
+        <div class="field">
+          <label for="hc">{{ t('input_hormonal_contraceptives') }}</label>
+          <select id="hc" name="Hormonal Contraceptives" required>
+            <option value="0">{{ t('common_no') }}</option>
+            <option value="1">{{ t('common_yes') }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="iud">{{ t('input_iud') }}</label>
+          <select id="iud" name="IUD" required>
+            <option value="0">{{ t('common_no') }}</option>
+            <option value="1">{{ t('common_yes') }}</option>
+          </select>
+        </div>
+      </div>
+ 
+      <div class="form-section-label">{{ t('section_std') }}</div>
+ 
+      <div class="row-2">
+        <div class="field">
+          <label for="stds">{{ t('input_stds') }}</label>
+          <select id="stds" name="STDs" required>
+            <option value="0">{{ t('common_no') }}</option>
+            <option value="1">{{ t('common_yes') }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="stds_num">{{ t('input_stds_number') }}</label>
+          <input type="number" id="stds_num" name="STDs (number)" min="0" step="1" value="0">
+        </div>
+      </div>
+ 
+      <div class="field">
+        <label for="hpv">{{ t('input_stds_hpv') }}</label>
+        <select id="hpv" name="STDs:HPV" required>
+          <option value="0">{{ t('common_no') }}</option>
+          <option value="1">{{ t('common_yes') }}</option>
+        </select>
+      </div>
+ 
+      <div class="form-section-label">{{ t('section_symptoms') }}</div>
+ 
+      <div class="symptom-box">
+        <p class="symptom-help">{{ t('symptoms_help') }}</p>
+        <label class="symptom-check"><input type="checkbox" name="symptom_bleeding" value="1"> {{ t('symptom_bleeding') }}</label>
+        <label class="symptom-check"><input type="checkbox" name="symptom_postcoital" value="1"> {{ t('symptom_postcoital') }}</label>
+        <label class="symptom-check"><input type="checkbox" name="symptom_discharge" value="1"> {{ t('symptom_discharge') }}</label>
+        <label class="symptom-check"><input type="checkbox" name="symptom_pelvic_pain" value="1"> {{ t('symptom_pelvic_pain') }}</label>
+        <label class="symptom-check"><input type="checkbox" name="symptom_pain_intercourse" value="1"> {{ t('symptom_pain_intercourse') }}</label>
+      </div>
+ 
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top: 28px;">{{ t('btn_submit') }}</button>
+    </form>
+  </div>
+</div>
+ 
+{% endblock %}
+ 
